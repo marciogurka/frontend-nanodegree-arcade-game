@@ -1,40 +1,185 @@
-// Enemies our player must avoid
-var Enemy = function() {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
+/**
+ * Generates a new random number
+ * @param  {int} min the minimal number
+ * @param  {int} max the maximum number
+ * @return {int}     the random number between the min and max
+ */
+ function randomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
+}
 
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
+/**
+ * Enemy Class
+ * @param {int} x     Initial horizontal position
+ * @param {int} y     Initial vertical position
+ * @param {int} speed Initial Speed
+ * @param {url} image Image Char url
+ */
+ var Enemy = function(x, y, speed, image) {
+    this.x = x;
+    this.y = y;
     this.sprite = 'images/enemy-bug.png';
+    this.speed = speed;
 };
 
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
+
+/**
+ *  Update the enemy's position
+ * @param  {int} dt the delta value
+ */
+ Enemy.prototype.update = function(dt) {
+    this.x += (Math.random() * 60 * dt);
+    this.reset();
+    this.checkCollisions();
 };
 
-// Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
+/**
+ * Draws the enemy on the screen
+ */
+ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+/**
+ * Reset enemy position to the start of the canvas
+ */
+ Enemy.prototype.reset = function() {
+    if (this.x >= 500) {
+        this.x = -101;
+        this.speed = randomNumber(250, 450);
+    }
+};
+
+/**
+ * Check if the player collided with an enemy,
+ * if the player collided, he`ll return to the start
+ */
+ Enemy.prototype.checkCollisions = function() {
+    for (var i = 0; i < allEnemies.length; i++) {
+        if ((allEnemies[i].x) <= player.x + 30 &&
+            (allEnemies[i].x + 30) >= (player.x) &&
+            (allEnemies[i].y) <= player.y + 30 &&
+            (allEnemies[i].y + 30) >= (player.y)) {
+
+            var t = confirm("You lose. Do you want to restart?");
+        if(t){
+            player.reset();
+            for (var i = 0; i < allEnemies.length; i++) {
+                allEnemies[i].reset();
+            }
+        } else {
+            player.reset();
+        }
+    }
+}
+};
+
+/**
+ * Player class
+ * @param {int} x     Initial horizontal position of the player
+ * @param {int} y     Initial vertical position of the player
+ * @param {url} image Image url of the character
+ */
+ var Player = function(x, y,image) {
+    this.x = x;
+    this.y = y;
+    this.sprite = image;
+};
 
 
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
+Player.prototype.update = function(dt) {
+
+};
+
+/**
+ * Draws the player on the screen
+ */
+ Player.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+};
+
+/**
+ * Implementation of the player`s movement
+ * @param  {string} direction the key name that is clicked
+ */
+ Player.prototype.handleInput = function(direction) {
+    switch(direction){
+        case "up":
+        this.y = this.y - 80;
+        break;
+        case "down":
+        this.y = this.y + 80;
+        break;
+        case "left":
+        this.x = this.x - 100;
+        break;
+        case "right":
+        this.x = this.x + 100;
+        break;
+    }
+
+    // if the player try to get out the canvas, they will continue on the last valid position
+    if (this.x < 0) {
+        this.x = 0;
+    } else if (this.x > 400) {
+        this.x = 400;
+    }
+
+    if (this.y < 0) {
+        this.reset();
+    } else if (this.y > 400) {
+        this.y = 400;
+        this.reset();
+    }
+
+};
+
+/**
+ * Reset the player`s position
+ */
+ Player.prototype.reset = function() {
+    this.x = 202;
+    this.y = 390;
+};
 
 
+/**
+ * First Enemy
+ * @type {Enemy}
+ */
+ var enemy1 = new Enemy(-101, 55, randomNumber(150, 450), 'images/mutant-enemy-bug.png');
+/**
+ * Second Enemy
+ * @type {Enemy}
+ */
+ var enemy2 = new Enemy(-101, 140, randomNumber(50, 450), 'images/enemy-bug.png');
+/**
+ * Third Enemy
+ * @type {Enemy}
+ */
+ var enemy3 = new Enemy(-101, 225, randomNumber(75, 450), 'images/mutant-enemy-bug.png');
 
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keyup', function(e) {
+/**
+ * Array of the enemies
+ * @type {Array}
+ */
+ var allEnemies = [];
+ allEnemies.push(enemy1);
+ allEnemies.push(enemy2);
+ allEnemies.push(enemy3);
+
+/**
+ * Player char
+ * @type {Player}
+ */
+ var player = new Player(202, 390, 'images/char-boy.png');
+
+
+/**
+ * Method to check what key was pressed
+ * @param  {string} e  The key that was pressed
+ */
+ document.addEventListener('keyup', function(e) {
     var allowedKeys = {
         37: 'left',
         38: 'up',
