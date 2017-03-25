@@ -9,100 +9,90 @@
 }
 
 /**
- * Enemy Class
+ * Entity Class
  * @param {int} x     Initial horizontal position
  * @param {int} y     Initial vertical position
  * @param {int} speed Initial Speed
  * @param {url} image Image Char url
  */
- var Enemy = function(x, y, speed, image) {
+
+var Entity = function(x, y, speed, image) {
     this.x = x;
     this.y = y;
-    this.sprite = 'images/enemy-bug.png';
+    //this.sprite = 'images/enemy-bug.png';
+    this.sprite = image;
     this.speed = speed;
 };
 
-
 /**
- *  Update the enemy's position
+ *  Update the Entity's position
  * @param  {int} dt the delta value
  */
- Enemy.prototype.update = function(dt) {
+Entity.prototype.update = function(dt) {
     this.x += (Math.random() * 60 * dt);
     this.reset();
-    this.checkCollisions();
 };
 
 /**
- * Draws the enemy on the screen
+ * Draws the Entity on the screen
  */
- Enemy.prototype.render = function() {
+Entity.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
 /**
- * Reset enemy position to the start of the canvas
+ * Reset Entity position to the start of the canvas
  */
- Enemy.prototype.reset = function() {
+Entity.prototype.reset = function() {
     if (this.x >= 500) {
         this.x = -101;
         this.speed = randomNumber(250, 450);
     }
 };
 
+var Enemy = function(x, y, speed, image){
+    var obj = new Entity(x, y, speed, image);
+    Enemy.prototype = Object.create(Entity.prototype);
+    Enemy.prototype.constructor = Enemy;
+    return obj;
+};
+
+var Player = function(x, y, speed, image){
+    var obj = new Entity(x, y, speed, image);
+    Player.prototype = Object.create(Entity.prototype);
+    Player.prototype.constructor = Enemy;
+    return obj;
+};
+
 /**
  * Check if the player collided with an enemy,
  * if the player collided, he`ll return to the start
  */
- Enemy.prototype.checkCollisions = function() {
-    for (var i = 0; i < allEnemies.length; i++) {
-        if ((allEnemies[i].x) <= player.x + 30 &&
-            (allEnemies[i].x + 30) >= (player.x) &&
-            (allEnemies[i].y) <= player.y + 30 &&
-            (allEnemies[i].y + 30) >= (player.y)) {
+ Enemy.prototype.checkCollisions = function() { 
+    allEnemies.forEach(function(enemy){
+        if ((enemy.x) <= player.x + 30 &&
+            (enemy.x + 30) >= (player.x) &&
+            (enemy.y) <= player.y + 30 &&
+            (enemy.y + 30) >= (player.y)) {
 
             var t = confirm("You lose. Do you want to restart?");
-        if(t){
-            player.reset();
-            for (var i = 0; i < allEnemies.length; i++) {
-                allEnemies[i].reset();
+            if(t){
+                player.reset();
+                allEnemies.forEach(function(enemy) {
+                    enemy.reset()
+                });
+            } else {
+                player.reset();
             }
-        } else {
-            player.reset();
         }
-    }
-}
-};
-
-/**
- * Player class
- * @param {int} x     Initial horizontal position of the player
- * @param {int} y     Initial vertical position of the player
- * @param {url} image Image url of the character
- */
- var Player = function(x, y,image) {
-    this.x = x;
-    this.y = y;
-    this.sprite = image;
-};
-
-
-Player.prototype.update = function(dt) {
-
-};
-
-/**
- * Draws the player on the screen
- */
- Player.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    })
 };
 
 /**
  * Implementation of the player`s movement
  * @param  {string} direction the key name that is clicked
  */
- Player.prototype.handleInput = function(direction) {
+ Player.prototype.handleInputAndCheckBoundary = function(direction) {
     switch(direction){
         case "up":
         this.y = this.y - 80;
@@ -118,6 +108,10 @@ Player.prototype.update = function(dt) {
         break;
     }
 
+    this.checkBoundary(this);
+};
+
+ Player.prototype.checkBoundary = function(){
     // if the player try to get out the canvas, they will continue on the last valid position
     if (this.x < 0) {
         this.x = 0;
@@ -132,12 +126,12 @@ Player.prototype.update = function(dt) {
         this.reset();
     }
 
-};
+}
 
 /**
  * Reset the player`s position
  */
- Player.prototype.reset = function() {
+Player.prototype.reset = function() {
     this.x = 202;
     this.y = 390;
 };
@@ -158,7 +152,6 @@ Player.prototype.update = function(dt) {
  * @type {Enemy}
  */
  var enemy3 = new Enemy(-101, 225, randomNumber(75, 450), 'images/mutant-enemy-bug.png');
-
 /**
  * Array of the enemies
  * @type {Array}
@@ -187,5 +180,5 @@ Player.prototype.update = function(dt) {
         40: 'down'
     };
 
-    player.handleInput(allowedKeys[e.keyCode]);
+    player.handleInputAndCheckBoundary(allowedKeys[e.keyCode]);
 });
