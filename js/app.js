@@ -52,16 +52,14 @@ var Player = function(){
     this.sprite = 'images/char-boy.png';//Defines Players sprite
     this.x = 200; //starting x position
     this.y = 400;//starting y position
+    this.speed = Math.floor((Math.random() * 300) + 100);
 };
 
 // Update the Player's position
 Player.prototype.update = function(){
-    
-    // Detect collision. Reset if collision detected
-    for (i = 0; i < allEnemies.length; i++) { 
-        if(((allEnemies[i].x - player.x) < 70)  && ((allEnemies[i].y - player.y) < 70) && ((player.x - allEnemies[i].x) < 70) && ((player.y - allEnemies[i].y) < 70))
-            player.reset();
-    }
+    if(this.x < 0 || this.y < 60 || this.x > 400 || this.y > 400) {
+        this.reset();
+    }   
 };
 
 // Draw the player on the screen, required method for game
@@ -73,24 +71,12 @@ Player.prototype.render = function(){
 Player.prototype.handleInput = function(direction){
     if(direction === 'left'){
         this.x -= 100;
-        if(this.x < 0){
-            this.x = 0;
-        }       
-    }else if(direction === 'up' && this.y > 60){
+    }else if(direction === 'up'){
         this.y -= 85;
     }else if(direction === 'right'){
         this.x += 100;
-        if(this.x > 400){
-            this.x = 400;
-        }
     }else if(direction === 'down'){
         this.y += 85;
-        if(this.y > 400){
-            this.y = 400;
-        }
-    }else{
-        // Reset when player reaches water
-        player.reset();
     }
 };
 
